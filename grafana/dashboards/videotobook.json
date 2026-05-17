@@ -1,0 +1,352 @@
+{
+  "__inputs": [
+    { "name": "DS_PROMETHEUS", "label": "Prometheus", "description": "", "type": "datasource", "pluginId": "prometheus", "pluginName": "Prometheus" },
+    { "name": "DS_ELASTICSEARCH", "label": "Elasticsearch", "description": "", "type": "datasource", "pluginId": "elasticsearch", "pluginName": "Elasticsearch" }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
+    { "type": "datasource", "id": "elasticsearch", "name": "Elasticsearch", "version": "1.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" },
+    { "type": "panel", "id": "logs", "name": "Logs", "version": "" },
+    { "type": "panel", "id": "row", "name": "Row", "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["videotobook", "nodejs", "api"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "VideoToBook — App Monitor",
+  "uid": "videotobook-monitor-v1",
+  "version": 1,
+  "templating": {
+    "list": [
+      { "current": {}, "hide": 0, "includeAll": false, "multi": false, "name": "DS_PROMETHEUS", "options": [], "query": "prometheus", "refresh": 1, "type": "datasource", "label": "Prometheus" },
+      { "current": {}, "hide": 0, "includeAll": false, "multi": false, "name": "DS_ELASTICSEARCH", "options": [], "query": "elasticsearch", "refresh": 1, "type": "datasource", "label": "Elasticsearch" }
+    ]
+  },
+  "panels": [
+
+    { "id": 1, "title": "Uptime", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 60 }, { "color": "green", "value": 300 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "time() - process_start_time_seconds{job=\"videotobook_app\"}", "legendFormat": "Uptime", "instant": true }]
+    },
+
+    { "id": 2, "title": "CPU Usage", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 60 }, { "color": "red", "value": 85 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "rate(process_cpu_seconds_total{job=\"videotobook_app\"}[1m]) * 100", "legendFormat": "CPU %", "instant": true }]
+    },
+
+    { "id": 3, "title": "Memory (RSS)", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 500000000 }, { "color": "red", "value": 1000000000 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "process_resident_memory_bytes{job=\"videotobook_app\"}", "legendFormat": "RSS", "instant": true }]
+    },
+
+    { "id": 4, "title": "Active Handles (Threads)", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 200 }, { "color": "red", "value": 500 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_active_handles_total{job=\"videotobook_app\"}", "legendFormat": "Handles", "instant": true }]
+    },
+
+    { "id": 5, "title": "Event Loop Lag (p99)", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "ms", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 200 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_eventloop_lag_p99_seconds{job=\"videotobook_app\"} * 1000", "legendFormat": "Lag p99", "instant": true }]
+    },
+
+    { "id": 6, "title": "HTTP Error Rate (5xx)", "type": "stat", "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "sum(rate(http_requests_total{job=\"videotobook_app\",status_code=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"videotobook_app\"}[5m]))", "legendFormat": "5xx rate", "instant": true }]
+    },
+
+    { "id": 10, "title": "System Resources", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 4 }, "collapsed": false, "targets": [] },
+
+    { "id": 11, "title": "CPU Usage %", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 15, "gradientMode": "opacity", "spanNulls": false } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "rate(process_cpu_user_seconds_total{job=\"videotobook_app\"}[1m]) * 100", "legendFormat": "User CPU %" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "rate(process_cpu_system_seconds_total{job=\"videotobook_app\"}[1m]) * 100", "legendFormat": "System CPU %" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "rate(process_cpu_seconds_total{job=\"videotobook_app\"}[1m]) * 100", "legendFormat": "Total CPU %" }
+      ]
+    },
+
+    { "id": 12, "title": "Memory Usage", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10, "gradientMode": "opacity", "spanNulls": false } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "process_resident_memory_bytes{job=\"videotobook_app\"}", "legendFormat": "RSS (total process memory)" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_heap_size_used_bytes{job=\"videotobook_app\"}", "legendFormat": "Heap Used" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_heap_size_total_bytes{job=\"videotobook_app\"}", "legendFormat": "Heap Allocated" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_external_memory_bytes{job=\"videotobook_app\"}", "legendFormat": "External (Buffers)" }
+      ]
+    },
+
+    { "id": 20, "title": "Threads & Connections", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }, "collapsed": false, "targets": [] },
+
+    { "id": 21, "title": "Active Handles by Type", "type": "timeseries", "gridPos": { "h": 8, "w": 8, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 1, "fillOpacity": 20, "stacking": { "mode": "normal" } } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_active_handles{job=\"videotobook_app\"}", "legendFormat": "{{type}}" }]
+    },
+
+    { "id": 22, "title": "HTTP Active Connections", "type": "timeseries", "gridPos": { "h": 8, "w": 8, "x": 8, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 15 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "http_active_connections{job=\"videotobook_app\"}", "legendFormat": "Active HTTP Connections" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_active_requests_total{job=\"videotobook_app\"}", "legendFormat": "Pending Async Requests" }
+      ]
+    },
+
+    { "id": 23, "title": "Event Loop Lag", "type": "timeseries", "gridPos": { "h": 8, "w": 8, "x": 16, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "ms", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_eventloop_lag_p50_seconds{job=\"videotobook_app\"} * 1000", "legendFormat": "Lag p50" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_eventloop_lag_p90_seconds{job=\"videotobook_app\"} * 1000", "legendFormat": "Lag p90" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "nodejs_eventloop_lag_p99_seconds{job=\"videotobook_app\"} * 1000", "legendFormat": "Lag p99" }
+      ]
+    },
+
+    { "id": 30, "title": "HTTP Traffic", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }, "collapsed": false, "targets": [] },
+
+    { "id": 31, "title": "Request Rate by Method", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "sum(rate(http_requests_total{job=\"videotobook_app\"}[1m])) by (method)", "legendFormat": "{{method}}" }]
+    },
+
+    { "id": 32, "title": "Request Rate by Status Code", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } },
+        "overrides": [
+          { "matcher": { "id": "byRegexp", "options": "5.." }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byRegexp", "options": "4.." }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byRegexp", "options": "2.." }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "sum(rate(http_requests_total{job=\"videotobook_app\"}[1m])) by (status_code)", "legendFormat": "HTTP {{status_code}}" }]
+    },
+
+    { "id": 40, "title": "API Usage & Latency", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 }, "collapsed": false, "targets": [] },
+
+    { "id": 41, "title": "Top API Routes (req/s)", "type": "table", "gridPos": { "h": 9, "w": 12, "x": 0, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 20 }] }, "custom": { "displayMode": "lcd-gauge", "align": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "route" }, "properties": [{ "id": "custom.width", "value": 280 }, { "id": "custom.displayMode", "value": "auto" }] },
+          { "matcher": { "id": "byName", "options": "method" }, "properties": [{ "id": "custom.width", "value": 70 }] }
+        ]
+      },
+      "options": { "sortBy": [{ "displayName": "Value", "desc": true }], "footer": { "show": false } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "topk(15, sum(rate(http_requests_total{job=\"videotobook_app\"}[5m])) by (method, route))", "legendFormat": "{{method}} {{route}}", "instant": true, "format": "table" }],
+      "transformations": [{ "id": "organize", "options": { "renameByName": { "Value": "req/s", "method": "Method", "route": "Route" } } }]
+    },
+
+    { "id": 42, "title": "API Response Time (Latency)", "type": "timeseries", "gridPos": { "h": 9, "w": 12, "x": 12, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 8 } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "p50 (median)" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "last"] } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_ms_bucket{job=\"videotobook_app\"}[5m])) by (le))", "legendFormat": "p50 (median)" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_ms_bucket{job=\"videotobook_app\"}[5m])) by (le))", "legendFormat": "p95" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_ms_bucket{job=\"videotobook_app\"}[5m])) by (le))", "legendFormat": "p99" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "sum(rate(http_request_duration_ms_sum{job=\"videotobook_app\"}[5m])) / sum(rate(http_request_duration_ms_count{job=\"videotobook_app\"}[5m]))", "legendFormat": "avg" }
+      ]
+    },
+
+    { "id": 50, "title": "Runtime Details", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 }, "collapsed": false, "targets": [] },
+
+    { "id": 51, "title": "Garbage Collection Duration", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 1, "fillOpacity": 20 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "rate(nodejs_gc_duration_seconds_sum{job=\"videotobook_app\"}[1m])", "legendFormat": "GC time/s ({{gc_type}})" }]
+    },
+
+    { "id": 52, "title": "Open File Descriptors", "type": "timeseries", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi", "sort": "desc" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "process_open_fds{job=\"videotobook_app\"}", "legendFormat": "Open FDs" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "process_max_fds{job=\"videotobook_app\"}", "legendFormat": "Max FDs (limit)" }
+      ]
+    },
+
+    { "id": 60, "title": "Application Logs (Elasticsearch)", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 }, "collapsed": false, "targets": [] },
+
+    { "id": 63, "title": "Error & Warning Count (time window)", "type": "stat", "gridPos": { "h": 4, "w": 12, "x": 0, "y": 51 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 10 }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "query": "level:error OR level:warn",
+        "timeField": "@timestamp",
+        "metrics": [{ "id": "1", "type": "count" }],
+        "bucketAggs": []
+      }]
+    },
+
+    { "id": 64, "title": "Info / Debug / Other Count (time window)", "type": "stat", "gridPos": { "h": 4, "w": 12, "x": 12, "y": 51 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "query": "NOT (level:error OR level:warn)",
+        "timeField": "@timestamp",
+        "metrics": [{ "id": "1", "type": "count" }],
+        "bucketAggs": []
+      }]
+    },
+
+    { "id": 61, "title": "Telemetry Event Stream", "type": "logs", "gridPos": { "h": 10, "w": 16, "x": 0, "y": 55 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": { "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true },
+      "targets": [{ "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" }, "query": "*", "timeField": "@timestamp", "metrics": [{ "id": "1", "type": "logs" }] }]
+    },
+
+    { "id": 62, "title": "Events by Type", "type": "table", "gridPos": { "h": 10, "w": 8, "x": 16, "y": 55 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "custom": { "displayMode": "auto" } },
+        "overrides": [{ "matcher": { "id": "byName", "options": "Count" }, "properties": [{ "id": "custom.displayMode", "value": "lcd-gauge" }, { "id": "color", "value": { "mode": "continuous-GrYlRd" } }] }]
+      },
+      "options": { "sortBy": [{ "displayName": "Count", "desc": true }], "footer": { "show": false } },
+      "targets": [{
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "query": "*",
+        "timeField": "@timestamp",
+        "metrics": [{ "id": "1", "type": "count" }],
+        "bucketAggs": [{ "id": "2", "type": "terms", "field": "event.keyword", "settings": { "size": "20", "order": "desc", "orderBy": "1" } }]
+      }]
+    },
+
+    { "id": 65, "title": "Error & Warning Log Stream", "type": "logs", "gridPos": { "h": 12, "w": 12, "x": 0, "y": 65 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [{
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "query": "level:error OR level:warn",
+        "timeField": "@timestamp",
+        "metrics": [{ "id": "1", "type": "logs" }]
+      }]
+    },
+
+    { "id": 66, "title": "Info / Debug / Other Log Stream", "type": "logs", "gridPos": { "h": 12, "w": 12, "x": 12, "y": 65 },
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [{
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "query": "NOT (level:error OR level:warn)",
+        "timeField": "@timestamp",
+        "metrics": [{ "id": "1", "type": "logs" }]
+      }]
+    },
+
+    { "id": 70, "title": "Connectivity Checks", "type": "row", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 77 }, "collapsed": false, "targets": [] },
+
+    { "id": 71, "title": "Prometheus — App Scrape Status", "type": "stat", "gridPos": { "h": 4, "w": 8, "x": 0, "y": 78 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "mappings": [
+            { "type": "value", "options": { "1": { "text": "UP", "color": "green", "index": 0 } } },
+            { "type": "special", "options": { "match": "null", "result": { "text": "DOWN", "color": "red", "index": 1 } } }
+          ]
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "up{job=\"videotobook_app\"}", "legendFormat": "App reachable", "instant": true }]
+    },
+
+    { "id": 72, "title": "Prometheus — Scrape Duration", "type": "stat", "gridPos": { "h": 4, "w": 8, "x": 8, "y": 78 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "s", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "scrape_duration_seconds{job=\"videotobook_app\"}", "legendFormat": "Scrape duration", "instant": true }]
+    },
+
+    { "id": 73, "title": "Prometheus — Last Successful Scrape", "type": "stat", "gridPos": { "h": 4, "w": 8, "x": 16, "y": 78 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": { "defaults": { "unit": "dateTimeAsIso", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "scrape_duration_seconds{job=\"videotobook_app\"} * 0 + time()", "legendFormat": "Last scrape", "instant": true }]
+    }
+
+  ]
+}

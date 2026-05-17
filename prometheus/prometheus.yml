@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    app: videotobook
+    env: production
+
+scrape_configs:
+
+  # ── Your Node.js app ────────────────────────────────────────────────────────
+  # Replace "host.docker.internal" with your EasyPanel service name when
+  # running inside EasyPanel (e.g. "videotobook-app:3000").
+  # "host.docker.internal" lets Prometheus reach the app running on the host
+  # when both are on the same machine.
+  - job_name: videotobook_app
+    scrape_interval: 15s
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:3000   # local dev
+          # - videotobook-app:3000      # EasyPanel internal hostname
+
+  # ── Prometheus self-monitoring ───────────────────────────────────────────────
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
